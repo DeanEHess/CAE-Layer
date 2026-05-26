@@ -20,128 +20,107 @@
   :root.light .ex-box { background:rgba(0,0,0,0.03); }
   :root.light .info-empty { color:#aaa; }
 
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{
-    background:var(--bg);color:var(--text);
-    font-family:'Noto Serif KR',serif;
-    width:100vw;
-    /* 모바일 브라우저 주소창 고려 */
-    height: 100vh; 
-    height: 100dvh; 
-    overflow:hidden;
-    display:flex;flex-direction:column;
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Noto Serif KR', serif;
+    width: 100vw; 
+    height: 100vh; height: 100dvh; /* 모바일 주소창 완벽 대응 */
+    overflow: hidden;
+    position: relative; /* 절대 위치 레이아웃 기준점 */
   }
 
-  nav{
-    display:flex;align-items:center;gap:12px;
-    padding:10px 16px;border-bottom:1px solid var(--border);
-    flex-shrink:0;
+  nav {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 48px;
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 16px; border-bottom: 1px solid var(--border);
+    background: var(--bg); z-index: 10;
   }
-  .nav-title{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--muted);}
-  .legend{display:flex;gap:12px;}
-  .leg{display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
-  .dot{width:8px;height:8px;border-radius:50%;}
-  .nav-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
-  .theme-btn{
-    background:none;border:1px solid var(--border);border-radius:20px;
-    padding:3px 10px;cursor:pointer;
-    font-family:'JetBrains Mono',monospace;font-size:10px;
-    color:var(--muted);transition:all 0.2s;
+  .nav-title { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 2px; color: var(--muted); }
+  .legend { display: flex; gap: 12px; }
+  .leg { display: flex; align-items: center; gap: 5px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .nav-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  
+  .theme-btn {
+    background: none; border: 1px solid var(--border); border-radius: 20px;
+    padding: 3px 10px; cursor: pointer;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--muted); transition: all 0.2s;
   }
-  .theme-btn:hover{color:var(--text);}
-  .nav-link{
-    font-family:'JetBrains Mono',monospace;font-size:10px;
-    color:var(--muted);text-decoration:none;
-    padding:3px 10px;border:1px solid var(--border);border-radius:2px;
-  }
-
-  #canvas-wrap{ flex:1; min-height:0; position:relative; }
-  #canvas{width:100%;height:100%;display:block;}
-
-  #info{
-    height:220px; flex-shrink:0; border-top:1px solid var(--border);
-    display:flex; overflow:hidden;
+  .theme-btn:hover { color: var(--text); }
+  .nav-link {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--muted); text-decoration: none;
+    padding: 3px 10px; border: 1px solid var(--border); border-radius: 2px;
   }
 
-  .info-main{
-    width:240px; flex-shrink:0; border-right:1px solid var(--border);
-    padding:16px 18px; display:flex; flex-direction:column; gap:6px; overflow:hidden;
+  /* 캔버스 영역 절대 고정 */
+  #canvas-wrap { 
+    position: absolute; top: 48px; bottom: 240px; left: 0; right: 0; 
   }
-  .info-code{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;}
-  .info-name{font-size:13px;font-weight:700;}
-  .info-desc{font-size:11px;line-height:1.7;color:#999;overflow-y:auto;flex:1;}
+  #canvas { width: 100%; height: 100%; display: block; }
 
-  .info-conn{
-    width:260px; flex-shrink:0; border-right:1px solid var(--border);
-    padding:14px 16px; overflow-y:auto; display:flex; flex-direction:column; gap:10px;
-  }
-  .conn-section-label{
-    font-family:'JetBrains Mono',monospace;font-size:9px;
-    letter-spacing:2px;color:var(--muted);text-transform:uppercase; margin-bottom:4px;
-  }
-  .conn-list{display:flex;flex-direction:column;gap:4px;}
-  .conn-item{
-    display:flex;align-items:flex-start;gap:6px;
-    padding:6px 8px;background:var(--surface);
-    border:1px solid var(--border);border-radius:3px;
-    cursor:pointer;transition:border-color 0.15s;
-  }
-  .conn-item:hover{border-color:#555;}
-  .conn-arrow{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);min-width:12px;margin-top:2px;}
-  .conn-code{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;min-width:24px;margin-top:1px;}
-  .conn-text{font-size:10px;color:#999;line-height:1.5;}
-
-  .info-example{ flex:1; padding:14px 18px; overflow-y:auto; }
-  .ex-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
-  .ex-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
-  .ex-text{font-size:11px;line-height:1.8;color:#999;}
-  .ex-text em{font-style:normal;font-weight:700;color:#ccc;}
-  :root.light .ex-text em{color:#333;}
-
-  .info-empty{
-    display:flex;align-items:center;justify-content:center;
-    width:100%;height:100%;
-    font-family:'JetBrains Mono',monospace;font-size:11px;
-    color:var(--muted);letter-spacing:2px;
-    flex-direction:column;gap:8px;
+  /* 정보창 영역 절대 고정 */
+  #info {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 240px;
+    border-top: 1px solid var(--border);
+    display: flex; overflow: hidden; background: var(--bg);
   }
 
-  /* 모바일 최적화 수정 사항 */
-  @media(max-width:768px){
-    #canvas-wrap {
-      flex: 0 0 50%; /* 캔버스 공간을 화면의 50%로 고정 */
-    }
-    #info {
-      flex: 1; /* 남은 공간을 모두 차지하도록 설정 */
-      height: auto; 
-      flex-direction: column; 
-      overflow-y: auto; /* 내용이 길면 내부에서 스크롤되도록 처리 */
-    }
-    .info-main {
-      width: 100%;
-      border-right: none;
-      border-bottom: 1px solid var(--border);
-      padding: 16px;
-      height: auto;
-      flex-shrink: 0;
-    }
-    .info-conn {
-      width: 100%;
-      border-right: none;
-      border-bottom: 1px solid var(--border);
-      height: auto;
-      padding: 16px;
-      flex-shrink: 0;
-      overflow-y: visible;
-    }
-    .info-example {
-      display: block; /* 모바일에서도 교과서적 사례 노출 */
-      width: 100%;
-      height: auto;
-      padding: 16px;
-      flex-shrink: 0;
-      overflow-y: visible;
-    }
+  .info-main {
+    width: 240px; flex-shrink: 0; border-right: 1px solid var(--border);
+    padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; overflow: hidden;
+  }
+  .info-code { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; }
+  .info-name { font-size: 13px; font-weight: 700; }
+  .info-desc { font-size: 11px; line-height: 1.7; color: #999; overflow-y: auto; flex: 1; }
+
+  .info-conn {
+    width: 260px; flex-shrink: 0; border-right: 1px solid var(--border);
+    padding: 14px 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+  }
+  .conn-section-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 4px;
+  }
+  .conn-list { display: flex; flex-direction: column; gap: 4px; }
+  .conn-item {
+    display: flex; align-items: flex-start; gap: 6px;
+    padding: 6px 8px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 3px;
+    cursor: pointer; transition: border-color 0.15s;
+  }
+  .conn-item:hover { border-color: #555; }
+  .conn-arrow { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); min-width: 12px; margin-top: 2px; }
+  .conn-code { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; min-width: 24px; margin-top: 1px; }
+  .conn-text { font-size: 10px; color: #999; line-height: 1.5; }
+
+  .info-example { flex: 1; padding: 14px 18px; overflow-y: auto; }
+  .ex-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; }
+  .ex-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+  .ex-text { font-size: 11px; line-height: 1.8; color: #999; }
+  .ex-text em { font-style: normal; font-weight: 700; color: #ccc; }
+  :root.light .ex-text em { color: #333; }
+
+  .info-empty {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--muted); letter-spacing: 2px;
+    flex-direction: column; gap: 8px;
+  }
+
+  /* 모바일(태블릿 포함) 세로 화면 강제 대응 */
+  @media(max-width: 768px){
+    #canvas-wrap { bottom: 50%; } /* 상단 50% 강제 할당 */
+    #info { top: 50%; height: auto; bottom: 0; flex-direction: column; overflow-y: auto; } /* 하단 50% 및 스크롤 */
+    
+    .info-main { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .info-conn { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-y: visible; }
+    .info-example { width: 100%; height: auto; display: block; flex-shrink: 0; overflow-y: visible; }
   }
 </style>
 </head>
@@ -150,9 +129,9 @@
 <nav>
   <span class="nav-title">CAE — MAP</span>
   <div class="legend">
-    <div class="leg"><div class="dot" style="background:var(--c)"></div>제약 C</div>
-    <div class="leg"><div class="dot" style="background:var(--a)"></div>조정 A</div>
-    <div class="leg"><div class="dot" style="background:var(--e)"></div>표현 E</div>
+    <div class="leg"><div class="dot" style="background:var(--c)"></div>제약</div>
+    <div class="leg"><div class="dot" style="background:var(--a)"></div>조정</div>
+    <div class="leg"><div class="dot" style="background:var(--e)"></div>표현</div>
   </div>
   <div class="nav-right">
     <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">☀ 라이트</button>
@@ -179,70 +158,41 @@
 </div>
 
 <script>
-const C='#c8a97e',A='#7eb8c8',E='#7ec89a',MUTED='#333';
-function tc(t){return t==='C'?C:t==='A'?A:E;}
-function getSurface(){return getComputedStyle(document.documentElement).getPropertyValue('--surface').trim()||'#141414';}
-function getBg(){return getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#0d0d0d';}
+const C='#c8a97e', A='#7eb8c8', E='#7ec89a', MUTED='#333';
+function tc(t){ return t==='C'?C : t==='A'?A : E; }
+function getSurface(){ return getComputedStyle(document.documentElement).getPropertyValue('--surface').trim()||'#141414'; }
 
 const nodes=[
-  {id:'C1',name:'시간·에너지·물리',type:'C'},
-  {id:'C2',name:'태양·지구·기후',type:'C'},
-  {id:'C3',name:'생태계·인구구조',type:'C'},
-  {id:'C4',name:'자원·희소성',type:'C'},
-  {id:'A1',name:'국가·권력·주권',type:'A'},
-  {id:'A2',name:'패권·안보·전쟁',type:'A'},
-  {id:'A3',name:'규칙·법·정책',type:'A'},
-  {id:'A4',name:'연구·기술·과학',type:'A'},
-  {id:'A5',name:'산업',type:'A'},
-  {id:'A6',name:'기업·전략·실행',type:'A'},
-  {id:'E1',name:'자본시장·금융',type:'E'},
-  {id:'E2',name:'실물경제',type:'E'},
-  {id:'E3',name:'개인·소비',type:'E'},
-  {id:'E4',name:'사회·갈등',type:'E'},
-  {id:'E5',name:'정치',type:'E'},
+  {id:'C1',name:'시간·에너지·물리',type:'C'}, {id:'C2',name:'태양·지구·기후',type:'C'},
+  {id:'C3',name:'생태계·인구구조',type:'C'}, {id:'C4',name:'자원·희소성',type:'C'},
+  {id:'A1',name:'국가·권력·주권',type:'A'}, {id:'A2',name:'패권·안보·전쟁',type:'A'},
+  {id:'A3',name:'규칙·법·정책',type:'A'}, {id:'A4',name:'연구·기술·과학',type:'A'},
+  {id:'A5',name:'산업',type:'A'}, {id:'A6',name:'기업·전략·실행',type:'A'},
+  {id:'E1',name:'자본시장·금융',type:'E'}, {id:'E2',name:'실물경제',type:'E'},
+  {id:'E3',name:'개인·소비',type:'E'}, {id:'E4',name:'사회·갈등',type:'E'}, {id:'E5',name:'정치',type:'E'},
 ];
 
 const edges=[
-  {from:'C1',to:'A4',label:'물리 법칙이 기술 개발의 방향을 제약'},
-  {from:'C1',to:'E1',label:'비가역성·복리 원리가 자본시장의 기본 전제'},
-  {from:'C2',to:'C3',label:'기후 변화가 생태계·서식지를 바꿈'},
-  {from:'C2',to:'A3',label:'기후 비용이 탄소 규범·정책을 만들어냄'},
-  {from:'C2',to:'E2',label:'폭염·홍수·가뭄이 식량·에너지 물가에 반영'},
-  {from:'C3',to:'C4',label:'인구 증가·생태 변화가 자원 소비 압력 증대'},
-  {from:'C3',to:'A1',label:'인구 구조가 국가 재정·복지 정책 방향 결정'},
-  {from:'C3',to:'E3',label:'인구 고령화가 개인 소비 패턴 변화'},
-  {from:'C4',to:'A2',label:'희소 자원 분포가 지정학적 긴장 유발'},
-  {from:'C4',to:'A4',label:'자원 제약이 대체 기술 개발 동기 부여'},
-  {from:'C4',to:'E2',label:'원자재 희소성이 물가·생산비용에 반영'},
-  {from:'A1',to:'A2',label:'국가 목표함수가 안보 전략 방향 결정'},
-  {from:'A1',to:'A3',label:'권력 구조가 법·제도·정책을 설계'},
-  {from:'A1',to:'E1',label:'국가 재정·채권 발행이 금리·유동성에 영향'},
-  {from:'A2',to:'A3',label:'패권 경쟁이 관세·제재·산업정책으로 구현'},
-  {from:'A2',to:'C4',label:'전쟁·봉쇄가 자원 공급망을 차단'},
-  {from:'A2',to:'E1',label:'지정학 리스크가 금융시장 변동성에 반영'},
-  {from:'A2',to:'E2',label:'봉쇄 및 관세 → 글로벌 물가 상승'},
-  {from:'A3',to:'A5',label:'산업정책·보조금이 특정 산업 육성·억제'},
-  {from:'A3',to:'A6',label:'세금·규제가 기업 이익 구조와 투자 유인 변화'},
-  {from:'A3',to:'E1',label:'통화정책(금리)이 자본시장 조건 결정'},
-  {from:'A3',to:'E2',label:'재정정책이 고용·물가·성장에 직접 영향'},
-  {from:'A4',to:'A5',label:'기술이 산업 표준·공급망 구조 재편'},
-  {from:'A4',to:'A6',label:'R&D가 기업 경쟁 우위와 비용 구조 결정'},
-  {from:'A4',to:'C4',label:'기술 혁신이 자원 제약의 경계를 확장'},
-  {from:'A5',to:'A6',label:'산업 구조가 기업의 가격결정력·마진 결정'},
-  {from:'A5',to:'E1',label:'CAPEX 사이클이 신용·투자 지표에 반영'},
-  {from:'A5',to:'E2',label:'생산능력 변화가 공급·고용·무역에 영향'},
-  {from:'A6',to:'E1',label:'기업 실적·현금흐름이 주가·신용에 반영'},
-  {from:'A6',to:'E2',label:'고용·투자·생산이 실물경제 지표로 집계'},
-  {from:'A6',to:'E3',label:'제품·가격정책이 개인 소비 패턴 변화'},
-  {from:'E1',to:'A3',label:'금리 급등·시장 발작이 정책 대응 강제'},
-  {from:'E1',to:'A6',label:'자금조달 비용이 기업 투자·CAPEX 결정'},
-  {from:'E1',to:'E2',label:'금융 여건이 실물 투자·소비에 파급'},
-  {from:'E2',to:'E1',label:'물가·고용 지표가 금리 기대 재조정'},
-  {from:'E2',to:'E3',label:'임금·물가·고용이 개인 생활 조건 결정'},
-  {from:'E3',to:'E2',label:'집단 소비 변화가 실물경제 집계 지표로 반영'},
-  {from:'E3',to:'E4',label:'체감 악화가 집단화되면 사회 갈등으로 전이'},
-  {from:'E4',to:'E5',label:'사회 갈등·신뢰 붕괴가 정치적 압력으로 표현'},
-  {from:'E5',to:'A3',label:'정치 상태 변화가 정책 방향·속도 재설계'},
+  {from:'C1',to:'A4',label:'물리 법칙이 기술 개발의 방향을 제약'}, {from:'C1',to:'E1',label:'비가역성·복리 원리가 자본시장의 기본 전제'},
+  {from:'C2',to:'C3',label:'기후 변화가 생태계·서식지를 바꿈'}, {from:'C2',to:'A3',label:'기후 비용이 탄소 규범·정책을 만들어냄'},
+  {from:'C2',to:'E2',label:'폭염·홍수·가뭄이 식량·에너지 물가에 반영'}, {from:'C3',to:'C4',label:'인구 증가·생태 변화가 자원 소비 압력 증대'},
+  {from:'C3',to:'A1',label:'인구 구조가 국가 재정·복지 정책 방향 결정'}, {from:'C3',to:'E3',label:'인구 고령화가 개인 소비 패턴 변화'},
+  {from:'C4',to:'A2',label:'희소 자원 분포가 지정학적 긴장 유발'}, {from:'C4',to:'A4',label:'자원 제약이 대체 기술 개발 동기 부여'},
+  {from:'C4',to:'E2',label:'원자재 희소성이 물가·생산비용에 반영'}, {from:'A1',to:'A2',label:'국가 목표함수가 안보 전략 방향 결정'},
+  {from:'A1',to:'A3',label:'권력 구조가 법·제도·정책을 설계'}, {from:'A1',to:'E1',label:'국가 재정·채권 발행이 금리·유동성에 영향'},
+  {from:'A2',to:'A3',label:'패권 경쟁이 관세·제재·산업정책으로 구현'}, {from:'A2',to:'C4',label:'전쟁·봉쇄가 자원 공급망을 차단'},
+  {from:'A2',to:'E1',label:'지정학 리스크가 금융시장 변동성에 반영'}, {from:'A2',to:'E2',label:'봉쇄 및 관세 → 글로벌 물가 상승'},
+  {from:'A3',to:'A5',label:'산업정책·보조금이 특정 산업 육성·억제'}, {from:'A3',to:'A6',label:'세금·규제가 기업 이익 구조와 투자 유인 변화'},
+  {from:'A3',to:'E1',label:'통화정책(금리)이 자본시장 조건 결정'}, {from:'A3',to:'E2',label:'재정정책이 고용·물가·성장에 직접 영향'},
+  {from:'A4',to:'A5',label:'기술이 산업 표준·공급망 구조 재편'}, {from:'A4',to:'A6',label:'R&D가 기업 경쟁 우위와 비용 구조 결정'},
+  {from:'A4',to:'C4',label:'기술 혁신이 자원 제약의 경계를 확장'}, {from:'A5',to:'A6',label:'산업 구조가 기업의 가격결정력·마진 결정'},
+  {from:'A5',to:'E1',label:'CAPEX 사이클이 신용·투자 지표에 반영'}, {from:'A5',to:'E2',label:'생산능력 변화가 공급·고용·무역에 영향'},
+  {from:'A6',to:'E1',label:'기업 실적·현금흐름이 주가·신용에 반영'}, {from:'A6',to:'E2',label:'고용·투자·생산이 실물경제 지표로 집계'},
+  {from:'A6',to:'E3',label:'제품·가격정책이 개인 소비 패턴 변화'}, {from:'E1',to:'A3',label:'금리 급등·시장 발작이 정책 대응 강제'},
+  {from:'E1',to:'A6',label:'자금조달 비용이 기업 투자·CAPEX 결정'}, {from:'E1',to:'E2',label:'금융 여건이 실물 투자·소비에 파급'},
+  {from:'E2',to:'E1',label:'물가·고용 지표가 금리 기대 재조정'}, {from:'E2',to:'E3',label:'임금·물가·고용이 개인 생활 조건 결정'},
+  {from:'E3',to:'E2',label:'집단 소비 변화가 실물경제 집계 지표로 반영'}, {from:'E3',to:'E4',label:'체감 악화가 집단화되면 사회 갈등으로 전이'},
+  {from:'E4',to:'E5',label:'사회 갈등·신뢰 붕괴가 정치적 압력으로 표현'}, {from:'E5',to:'A3',label:'정치 상태 변화가 정책 방향·속도 재설계'},
   {from:'E5',to:'A1',label:'선거·권력 교체가 국가 목표함수 재설정'},
 ];
 
@@ -251,4 +201,246 @@ const nodeData={
   C2:{desc:'태양과 지구의 에너지 균형이 바뀌면 기후가 변한다. 기후는 식량·보험·전력·인프라 비용 구조 전체를 흔든다.',ex:{title:'2022 유럽 천연가스 대란',text:'한파 등 <em>기후적 제약(C2)</em>과 전쟁(A2)이 맞물려 에너지 공급망이 마비되었다. 결국 전 유럽의 난방비 폭등(E2)과 산업 가동 중단을 불러왔다.'}},
   C3:{desc:'생태계 네트워크와 인구 구조가 만드는 경계. 생물학적 제약은 예고 없이 찾아와 거대한 파동을 만든다.',ex:{title:'코로나19 팬데믹 현상',text:'미생물/바이러스라는 <em>생물학적 제약(C3)</em>이 록다운이라는 강력한 국가 통제(A1)를 강제했고, 무제한 재정 방출과 인플레이션(E2)의 원인이 되었다.'}},
   C4:{desc:'물·토지·광물·식량은 한정되어 있다. 좋은 조건부터 먼저 쓰기 때문에 시간이 갈수록 투입 비용이 구조적으로 증가한다.',ex:{title:'1973년 제1차 오일쇼크',text:'원유라는 <em>제한된 광물 자원(C4)</em>의 공급이 지정학적 사유(중동전쟁)로 차단되자, 전 세계 생산 단가가 급등하고 스태그플레이션(E2)이 도래했다.'}},
-  A1:{desc:'법·제도를 만들고 강제 집행할 수 있는 최
+  A1:{desc:'법·제도를 만들고 강제 집행할 수 있는 최상위 의사결정 주체. 목표함수가 바뀌면 전체 레이어가 한 번에 정렬된다.',ex:{title:'2020년 팬데믹 록다운과 양적완화',text:'시장의 자율적 효율성보다 <em>체제 유지와 생명(안보)</em>을 최우선 목표로 전환(A1). 국경을 봉쇄하고 전례 없는 현금을 살포해 자본시장(E1)을 방어했다.'}},
+  A2:{desc:'힘의 배치와 균형. 전쟁이 없어도 자원·기술을 통한 패권 경쟁은 상시 작동하며 공급망을 재편한다.',ex:{title:'미·중 반도체 패권 전쟁',text:'군사적 영토 확장을 넘어 <em>첨단 반도체 기술(A2)</em>이 안보의 핵심 요충지가 되었다. 수출 통제를 통해 글로벌 IT 공급망(A5)이 두 진영으로 나뉘게 되었다.'}},
+  A3:{desc:'인센티브와 페널티의 설계. 세금·금융규제·산업정책이 개인과 기업의 투자 결정을 구조적으로 바꾼다.',ex:{title:'도드-프랭크법과 바젤 III',text:'금융위기 재발을 막기 위한 강력한 <em>자본 건전성 규제(A3)</em>. 은행들의 레버리지 축소가 강제되면서 글로벌 자본시장(E1)의 신용 창출 리듬이 근본적으로 변했다.'}},
+  A4:{desc:'제약의 경계를 넓히는 지식 엔진. 실험실의 발견이 대량 생산(규모화)되고 사회에 채택되어야만 세상이 바뀐다.',ex:{title:'mRNA 백신의 발견과 상용화',text:'실험실 기술(A4)이 바이러스라는 제약(C3)과 천문학적 자본(A1)을 만나 단 1년 만에 <em>규모화(A5)</em>되고 인류에게 채택되어 경제 재개를 앞당겼다.'}},
+  A5:{desc:'기술과 규칙이 대량화로 굳어지는 구조. 막대한 CAPEX와 인프라가 깔리면 산업 비용 곡선이 비가역적으로 변한다.',ex:{title:'미국 셰일가스 밸류체인 구축',text:'수압파쇄술(A4) 이후 수천 킬로미터의 파이프라인과 시추 인프라(A5)가 매몰 비용으로 깔렸다. 이 <em>비가역적 CAPEX</em>는 미국의 유가 통제력을 영구적으로 높였다.'}},
+  A6:{desc:'산업 위에서 자본 배분과 운영을 통해 성과를 내는 주체. 실행력의 격차가 압도적인 가격결정력을 만든다.',ex:{title:'애플의 팹리스 전환과 생태계 지배',text:'직접 공장을 짓지 않고 디자인과 R&D에 <em>자본을 집중(A6)</em>. 조립은 폭스콘에 위탁(운영능력)하여 엄청난 잉여현금흐름(FCF)을 창출하고 생태계를 지배했다.'}},
+  E1:{desc:'거시 경제 요소들의 누적을 가격으로 압축해 보여주는 계기판. 임계치를 넘으면 펀딩 경색으로 모든 행동을 구속한다.',ex:{title:'2008년 리먼 브라더스 파산',text:'부동산 부실이라는 실물 충격이 파생상품의 연쇄 부도를 일으켜 <em>글로벌 신용 시스템(E1)</em>을 마비시켰고, 실물 경제(E2) 전체의 심정지를 가져온 사건.'}},
+  E2:{desc:'수많은 주체의 선택이 모여 만들어진 실물경제의 출력값. 인플레나 대량 실업은 그 자체로 거대한 추세가 된다.',ex:{title:'팬데믹발 글로벌 인플레이션',text:'물류 병목과 록다운으로 글로벌 반도체와 부품의 공급이 멈추자, 자동차 등 <em>광범위한 상품 물가(CPI)가 폭등(E2)</em>하며 금리 인상(E1)을 역으로 강제했다.'}},
+  E3:{desc:'상위 레이어의 경제적 누적이 개인의 삶과 소비로 체감되는 지점. 필수 비용의 압박은 소비 여력을 완전히 좌우한다.',ex:{title:'서브프라임 모기지 사태의 가계 연쇄 파산',text:'변동금리 대출로 집을 산 개인들이 금리 인상(E1)과 집값 폭락(E2)을 버티지 못하고 <em>연쇄적으로 길거리에 나앉으며(E3)</em> 씻을 수 없는 체감적 상처를 입었다.'}},
+  E4:{desc:'개인의 팍팍한 체감이 집단화된 구조. 신뢰가 무너지고 명확한 서사가 형성되면 경제 위기는 사회 갈등으로 폭발한다.',ex:{title:'2011년 월가 점령 시위 (Occupy Wall Street)',text:'일반 가계(E3)는 파산하는데 금융가들은 구제금융으로 보너스를 챙기는 현실. "99% 대 1%"라는 명확한 갈등 <em>서사(E4)</em>가 시위라는 집단행동으로 점화되었다.'}},
+  E5:{desc:'표현이 조정으로 넘어가는 연결점. 사회적 갈등이 정치 권력으로 변환되어 국가의 새로운 정책을 찍어낸다.',ex:{title:'2016년 브렉시트(Brexit) 투표 가결',text:'양극화와 이민자 문제로 누적된 노동자 계층의 분노(E4)가 <em>투표(E5)</em>를 통해 터져 나와, EU 탈퇴라는 거대한 정책적 단절(A3)을 직접 만들어냈다.'}},
+};
+
+const colMap={C:0,A:1,E:2};
+const colNodes={C:['C1','C2','C3','C4'],A:['A1','A2','A3','A4','A5','A6'],E:['E1','E2','E3','E4','E5']};
+
+let selected=null;
+let W,H,svgEl;
+
+function getPos(id){
+  const idx = colNodes[nodes.find(x=>x.id===id).type].indexOf(id);
+  const cnt = colNodes[nodes.find(x=>x.id===id).type].length;
+  
+  const padX = 0.08;
+  const padY = W < 768 ? 0.12 : 0.08; 
+  const colW = (1 - padX * 2) / 3;
+  
+  const x = (padX + colMap[nodes.find(x=>x.id===id).type] * colW + colW / 2) * W;
+  const y = (padY + (idx + 0.5) / cnt * (1 - padY * 2)) * H;
+  return {x, y};
+}
+
+function init(){
+  svgEl = document.getElementById('canvas');
+  resize();
+  window.addEventListener('resize', () => { resize(); draw(); });
+}
+
+function resize(){
+  const wrap = document.getElementById('canvas-wrap');
+  W = wrap.clientWidth || window.innerWidth;
+  H = wrap.clientHeight || window.innerHeight / 2; // 확실한 폴백 제공
+  svgEl.setAttribute('width', W);
+  svgEl.setAttribute('height', H);
+}
+
+function ms(tag, attrs){
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+  return el;
+}
+
+function draw(){
+  // SVG 완전히 비우기 (innerHTML 버그 방지)
+  while(svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+  
+  // 마커를 위한 defs 생성
+  const defs = ms('defs', {});
+  svgEl.appendChild(defs);
+
+  drawBands();
+  edges.forEach(e => drawEdge(e, defs));
+  nodes.forEach(n => drawNode(n));
+}
+
+function drawBands(){
+  const bands = [
+    {col: 0, color: C, label: 'C — 제약'},
+    {col: 1, color: A, label: 'A — 조정'},
+    {col: 2, color: E, label: 'E — 표현'},
+  ];
+  const padX = 0.08, padY = 0.04;
+  const colW = (1 - padX * 2) / 3;
+  
+  bands.forEach(b => {
+    const x = (padX + b.col * colW) * W;
+    const rgb = b.color === C ? '200,169,126' : b.color === A ? '126,184,200' : '126,200,154';
+    
+    svgEl.appendChild(ms('rect', {
+      x: x + 4, y: padY * H,
+      width: colW * W - 8, height: (1 - padY * 2) * H,
+      rx: 6, fill: `rgba(${rgb},0.05)`, stroke: `rgba(${rgb},0.18)`, 'stroke-width': 1
+    }));
+    
+    const t = ms('text', {
+      x: x + colW * W / 2, y: (padY + 0.04) * H,
+      fill: b.color, 'font-size': 10, 'font-family': 'JetBrains Mono, monospace',
+      'text-anchor': 'middle', 'letter-spacing': 2, opacity: 0.7
+    });
+    t.textContent = b.label;
+    svgEl.appendChild(t);
+  });
+}
+
+function drawEdge(e, defs){
+  const fp = getPos(e.from), tp = getPos(e.to);
+  const fn = nodes.find(n => n.id === e.from);
+  const tn = nodes.find(n => n.id === e.to);
+  
+  const isConn = selected && (e.from === selected || e.to === selected);
+  const op = selected !== null ? (isConn ? 0.9 : 0.04) : 0.15;
+  const sw = isConn ? 2.5 : 1;
+  const color = isConn ? (e.from === selected ? tc(fn.type) : tc(tn.type)) : '#3a3a3a';
+
+  let pathD;
+  if(fn.type === tn.type){
+    const offset = W * 0.1 * (fn.type === 'A' ? -1 : 1);
+    const cx = fp.x + offset;
+    pathD = `M${fp.x},${fp.y} C${cx},${fp.y} ${cx},${tp.y} ${tp.x},${tp.y}`;
+  } else {
+    pathD = `M${fp.x},${fp.y} Q${(fp.x + tp.x) / 2},${(fp.y + tp.y) / 2} ${tp.x},${tp.y}`;
+  }
+
+  const mid = `mk-${e.from}-${e.to}`;
+  const mk = ms('marker', {id: mid, markerWidth: 8, markerHeight: 8, refX: 6, refY: 3, orient: 'auto'});
+  mk.appendChild(ms('path', {d: 'M0,0 L0,6 L7,3 z', fill: color}));
+  defs.appendChild(mk);
+
+  svgEl.appendChild(ms('path', {
+    d: pathD, stroke: color, 'stroke-width': sw, fill: 'none', opacity: op,
+    'marker-end': `url(#${mid})`
+  }));
+}
+
+function drawNode(n){
+  const p = getPos(n.id);
+  const color = tc(n.type);
+  const isSel = selected === n.id;
+  const isConn = selected && edges.some(e => 
+    (e.from === n.id && e.to === selected) || (e.to === n.id && e.from === selected) ||
+    (e.from === selected && e.to === n.id) || (e.to === selected && e.from === n.id)
+  );
+  const op = selected !== null ? (isSel || isConn ? 1 : 0.2) : 1;
+  const isMobile = W < 768;
+  const r = isSel ? (isMobile ? 24 : 30) : (isMobile ? 16 : 22);
+
+  const g = ms('g', {transform: `translate(${p.x},${p.y})`, style: 'cursor:pointer', opacity: op});
+  
+  if(isSel) g.appendChild(ms('circle', {r: isMobile ? 32 : 40, fill: color, opacity: 0.08}));
+  g.appendChild(ms('circle', {r, fill: getSurface(), stroke: color, 'stroke-width': isSel ? 2.5 : 1}));
+
+  const code = ms('text', {
+    'text-anchor': 'middle', fill: color, 'font-size': isMobile ? 10 : 12,
+    'font-weight': 700, 'font-family': 'JetBrains Mono, monospace', y: -2
+  });
+  code.textContent = n.id;
+  g.appendChild(code);
+
+  const nm = ms('text', {
+    'text-anchor': 'middle', fill: '#777', 'font-size': isMobile ? 7 : 8,
+    'font-family': 'Noto Serif KR, serif', y: 12
+  });
+  nm.textContent = n.name.split('·')[0];
+  g.appendChild(nm);
+
+  g.addEventListener('click', () => selectNode(n.id));
+  svgEl.appendChild(g);
+}
+
+function selectNode(id){
+  selected = selected === id ? null : id;
+  draw();
+  renderInfo(selected);
+}
+
+function renderInfo(id){
+  const empty = document.getElementById('info-empty');
+  const main = document.getElementById('info-main');
+  const conn = document.getElementById('info-conn');
+  const example = document.getElementById('info-example');
+
+  if(!id){
+    empty.style.display = 'flex'; main.style.display = 'none';
+    conn.style.display = 'none'; example.style.display = 'none';
+    return;
+  }
+
+  const n = nodes.find(x => x.id === id);
+  const d = nodeData[id];
+  const color = tc(n.type);
+  const outE = edges.filter(e => e.from === id);
+  const inE = edges.filter(e => e.to === id);
+
+  empty.style.display = 'none'; main.style.display = 'flex';
+  conn.style.display = 'flex'; example.style.display = 'block';
+
+  document.getElementById('i-code').textContent = n.id;
+  document.getElementById('i-code').style.color = color;
+  document.getElementById('i-name').textContent = n.name;
+  document.getElementById('i-desc').textContent = d.desc;
+
+  let html = '';
+  if(outE.length){
+    html += `<div><div class="conn-section-label" style="color:${color}">영향 주는 곳 →</div><div class="conn-list">`;
+    outE.forEach(e => {
+      const tn = nodes.find(x => x.id === e.to);
+      html += `<div class="conn-item" onclick="selectNode('${e.to}')">
+        <div class="conn-arrow" style="color:${color}">→</div>
+        <div class="conn-code" style="color:${tc(tn.type)}">${e.to}</div>
+        <div class="conn-text">${e.label}</div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+  if(inE.length){
+    html += `<div><div class="conn-section-label">← 영향 받는 곳</div><div class="conn-list">`;
+    inE.forEach(e => {
+      const fn = nodes.find(x => x.id === e.from);
+      html += `<div class="conn-item" onclick="selectNode('${e.from}')">
+        <div class="conn-arrow" style="color:${color}">←</div>
+        <div class="conn-code" style="color:${tc(fn.type)}">${e.from}</div>
+        <div class="conn-text">${e.label}</div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+  conn.innerHTML = html;
+
+  example.innerHTML = `
+    <div class="ex-label">교과서적 사례</div>
+    <div class="ex-title" style="color:${color}">${d.ex.title}</div>
+    <div class="ex-text">${d.ex.text}</div>`;
+}
+
+function applyTheme(theme){
+  document.documentElement.classList.toggle('light', theme === 'light');
+  document.getElementById('theme-btn').textContent = theme === 'light' ? '● 다크' : '☀ 라이트';
+  localStorage.setItem('cae-theme', theme);
+  draw();
+}
+function toggleTheme(){
+  applyTheme(localStorage.getItem('cae-theme') === 'light' ? 'dark' : 'light');
+}
+
+window.selectNode = selectNode;
+window.toggleTheme = toggleTheme;
+window.addEventListener('load', () => {
+  init();
+  applyTheme(localStorage.getItem('cae-theme') || 'dark');
+});
+</script>
+</body>
+</html>
