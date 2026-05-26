@@ -340,21 +340,37 @@ function drawEdge(e){
   const tn=nodes.find(n=>n.id===e.to);
   const isConn=selected&&(e.from===selected||e.to===selected);
   const hasSel=selected!==null;
-  const op=hasSel?(isConn?0.8:0.04):0.13;
-  const sw=isConn?2:1;
-  const color=isConn?(e.from===selected?tc(fn.type):tc(tn.type)):MUTED;
+  const op=hasSel?(isConn?0.9:0.04):0.15;
+  const sw=isConn?2.5:1;
+  const color=isConn?(e.from===selected?tc(fn.type):tc(tn.type)):'#3a3a3a';
 
-  const mx=(fp.x+tp.x)/2;
-  const my=(fp.y+tp.y)/2-Math.abs(fp.y-tp.y)*0.1;
+  // 같은 열이면 옆으로 우회하는 곡선
+  const sameCol=fn.type===tn.type;
+  let pathD;
+  if(sameCol){
+    // 같은 열: 왼쪽 또는 오른쪽으로 크게 우회
+    const colDir=fn.type==='A'?-1:1; // A열은 왼쪽, 나머지는 오른쪽
+    const offset=W*0.1*colDir;
+    const cx=fp.x+offset;
+    pathD=`M${fp.x},${fp.y} C${cx},${fp.y} ${cx},${tp.y} ${tp.x},${tp.y}`;
+  } else {
+    // 다른 열: 완만한 곡선
+    const mx=(fp.x+tp.x)/2;
+    const my=(fp.y+tp.y)/2;
+    pathD=`M${fp.x},${fp.y} Q${mx},${my} ${tp.x},${tp.y}`;
+  }
 
   const defs=svgEl.querySelector('defs')||(() => {const d=ms('defs',{});svgEl.insertBefore(d,svgEl.firstChild);return d;})();
   const mid=`mk-${e.from}-${e.to}`;
-  const mk=ms('marker',{id:mid,markerWidth:6,markerHeight:6,refX:5,refY:3,orient:'auto'});
-  mk.appendChild(ms('path',{d:'M0,0 L0,6 L6,3 z',fill:color,opacity:op}));
+  // 기존 마커 제거 후 재생성
+  const old=defs.querySelector(`#${mid}`);
+  if(old) old.remove();
+  const mk=ms('marker',{id:mid,markerWidth:8,markerHeight:8,refX:6,refY:3,orient:'auto'});
+  mk.appendChild(ms('path',{d:'M0,0 L0,6 L7,3 z',fill:color}));
   defs.appendChild(mk);
 
   svgEl.appendChild(ms('path',{
-    d:`M${fp.x},${fp.y} Q${mx},${my} ${tp.x},${tp.y}`,
+    d:pathD,
     stroke:color,'stroke-width':sw,fill:'none',opacity:op,
     'marker-end':`url(#${mid})`
   }));
