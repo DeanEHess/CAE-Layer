@@ -483,8 +483,8 @@ function toggleTheme(){
 window.selectNode=selectNode;
 window.toggleTheme=toggleTheme;
 window.addEventListener('load',()=>{
-  applyTheme(localStorage.getItem('cae-theme')||'dark');
   init();
+  applyTheme(localStorage.getItem('cae-theme')||'dark');
 });
 </script>
 </body>
