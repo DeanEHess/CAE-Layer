@@ -26,9 +26,9 @@
     background: var(--bg); color: var(--text);
     font-family: 'Noto Serif KR', serif;
     width: 100vw; 
-    height: 100vh; height: 100dvh; /* 모바일 주소창 완벽 대응 */
+    height: 100vh; height: 100dvh;
     overflow: hidden;
-    position: relative; /* 절대 위치 레이아웃 기준점 */
+    position: relative;
   }
 
   nav {
@@ -57,13 +57,11 @@
     padding: 3px 10px; border: 1px solid var(--border); border-radius: 2px;
   }
 
-  /* 캔버스 영역 절대 고정 */
   #canvas-wrap { 
     position: absolute; top: 48px; bottom: 240px; left: 0; right: 0; 
   }
   #canvas { width: 100%; height: 100%; display: block; }
 
-  /* 정보창 영역 절대 고정 */
   #info {
     position: absolute; bottom: 0; left: 0; right: 0; height: 240px;
     border-top: 1px solid var(--border);
@@ -113,10 +111,9 @@
     flex-direction: column; gap: 8px;
   }
 
-  /* 모바일(태블릿 포함) 세로 화면 강제 대응 */
   @media(max-width: 768px){
-    #canvas-wrap { bottom: 50%; } /* 상단 50% 강제 할당 */
-    #info { top: 50%; height: auto; bottom: 0; flex-direction: column; overflow-y: auto; } /* 하단 50% 및 스크롤 */
+    #canvas-wrap { bottom: 50%; } 
+    #info { top: 50%; height: auto; bottom: 0; flex-direction: column; overflow-y: auto; } 
     
     .info-main { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); flex-shrink: 0; }
     .info-conn { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-y: visible; }
@@ -237,12 +234,15 @@ function init(){
   svgEl = document.getElementById('canvas');
   resize();
   window.addEventListener('resize', () => { resize(); draw(); });
+  
+  // 누락되었던 핵심 코드 복구!
+  draw();
 }
 
 function resize(){
   const wrap = document.getElementById('canvas-wrap');
   W = wrap.clientWidth || window.innerWidth;
-  H = wrap.clientHeight || window.innerHeight / 2; // 확실한 폴백 제공
+  H = wrap.clientHeight || window.innerHeight / 2;
   svgEl.setAttribute('width', W);
   svgEl.setAttribute('height', H);
 }
@@ -254,10 +254,8 @@ function ms(tag, attrs){
 }
 
 function draw(){
-  // SVG 완전히 비우기 (innerHTML 버그 방지)
   while(svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
   
-  // 마커를 위한 defs 생성
   const defs = ms('defs', {});
   svgEl.appendChild(defs);
 
@@ -437,9 +435,13 @@ function toggleTheme(){
 
 window.selectNode = selectNode;
 window.toggleTheme = toggleTheme;
+
+// 약간의 딜레이를 주어 브라우저가 화면 크기를 완전히 계산한 후 그리도록 수정
 window.addEventListener('load', () => {
-  init();
-  applyTheme(localStorage.getItem('cae-theme') || 'dark');
+  setTimeout(() => {
+    init();
+    applyTheme(localStorage.getItem('cae-theme') || 'dark');
+  }, 50);
 });
 </script>
 </body>
