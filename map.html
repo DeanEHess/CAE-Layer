@@ -405,7 +405,8 @@ function drawEdge(e, defs){
 
   // 도착 노드 반지름 + 화살표 크기만큼 끝점을 당겨서 원 밖에 화살표 표시
   const isMobile = W < 768;
-  const toR = (selected === e.to ? (isMobile?24:30) : (isMobile?16:22)) + 8;
+  const nodeR = isMobile ? 16 : 22;
+  const toR = nodeR + 10;
   const dx = tp.x - fp.x, dy = tp.y - fp.y;
   const dist = Math.sqrt(dx*dx + dy*dy) || 1;
   const ex = tp.x - (dx/dist)*toR;
