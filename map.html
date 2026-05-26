@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CAE 레이어 — 연결 지도</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  :root {
+    --c: #c8a97e;
+    --a: #7eb8c8;
+    --e: #7ec89a;
+    --bg: #0d0d0d;
+    --surface: #141414;
+    --border: #2a2a2a;
+    --text: #e8e8e8;
+    --muted: #555;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Serif KR', serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .nav-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--muted);
+  }
+
+  .nav-link {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    transition: all 0.15s;
+    margin-left: auto;
+  }
+  .nav-link:hover { color: var(--text); border-color: #444; }
+
+  .hint {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .workspace {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* SVG 캔버스 */
+  #canvas {
+    flex: 1;
+    cursor: default;
+  }
+
+  /* 사이드 패널 */
+  .side {
+    width: 340px;
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .side-header {
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .side-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .side-name {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .side-sub {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .side-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+  }
+
+  .side-section {
+    margin-bottom: 24px;
+  }
+
+  .side-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .conn-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .conn-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .conn-item:hover { border-color: #444; }
+
+  .conn-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 28px;
+    margin-top: 1px;
+  }
+
+  .conn-text {
+    font-size: 12px;
+    color: #aaa;
+    line-height: 1.6;
+  }
+
+  .conn-arrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    min-width: 16px;
+    margin-top: 2px;
+  }
+
+  .example-box {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 14px 16px;
+  }
+
+  .example-text {
+    font-size: 12px;
+    line-height: 1.8;
+    color: #999;
+  }
+
+  .example-text em {
+    font-style: normal;
+    font-weight: 700;
+    color: #ccc;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 12px;
+    color: var(--muted);
+  }
+
+  .empty-icon {
+    font-size: 32px;
+    opacity: 0.3;
+  }
+
+  .empty-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-align: center;
+    line-height: 1.8;
+  }
+
+  /* 범례 */
+  .legend {
+    display: flex;
+    gap: 20px;
+    padding: 0 28px;
+    align-items: center;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-title">CAE LAYER — MAP</span>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--c)"></div>제약 (C)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--a)"></div>조정 (A)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--e)"></div>표현 (E)</div>
+  </div>
+  <span class="hint">노드를 클릭하면 연결이 보여요</span>
+  <a href="index.html" class="nav-link">← 상세 보기</a>
+</nav>
+
+<div class="workspace">
+  <svg id="canvas"></svg>
+
+  <div class="side">
+    <div id="side-content">
+      <div class="empty-state">
+        <div class="empty-icon">◎</div>
+        <div class="empty-text">노드를 클릭하면<br>연결 관계와 예시가<br>여기에 나타납니다</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const C = '#c8a97e', A = '#7eb8c8', E = '#7ec89a';
+const BG = '#0d0d0d', SURFACE = '#141414', BORDER = '#2a2a2a';
+const MUTED = '#444';
+
+// 노드 정의
+const nodes = [
+  { id:'C1', label:'C1', name:'시간·에너지·물리', type:'C', color:C },
+  { id:'C2', label:'C2', name:'태양·지구·기후', type:'C', color:C },
+  { id:'C3', label:'C3', name:'생태계·인구구조', type:'C', color:C },
+  { id:'C4', label:'C4', name:'자원·희소성', type:'C', color:C },
+  { id:'A1', label:'A1', name:'국가·권력·주권', type:'A', color:A },
+  { id:'A2', label:'A2', name:'패권·안보·전쟁', type:'A', color:A },
+  { id:'A3', label:'A3', name:'규칙·법·정책', type:'A', color:A },
+  { id:'A4', label:'A4', name:'연구·기술·과학', type:'A', color:A },
+  { id:'A5', label:'A5', name:'산업', type:'A', color:A },
+  { id:'A6', label:'A6', name:'기업·전략·실행', type:'A', color:A },
+  { id:'E1', label:'E1', name:'자본시장·금융', type:'E', color:E },
+  { id:'E2', label:'E2', name:'실물경제', type:'E', color:E },
+  { id:'E3', label:'E3', name:'개인·소비', type:'E', color:E },
+  { id:'E4', label:'E4', name:'사회·갈등', type:'E', color:E },
+  { id:'E5', label:'E5', name:'정치', type:'E', color:E },
+];
+
+// 연결 정의 (from → to, label)
+const edges = [
+  { from:'C1', to:'A4', label:'물리 법칙이 기술 개발의 방향을 제약' },
+  { from:'C1', to:'E1', label:'비가역성·복리 원리가 자본시장의 기본 전제' },
+  { from:'C2', to:'C3', label:'기후 변화가 생태계·서식지를 바꿈' },
+  { from:'C2', to:'A3', label:'기후 비용이 탄소 규범·정책을 만들어냄' },
+  { from:'C2', to:'E2', label:'폭염·홍수·가뭄이 식량·에너지 물가에 반영' },
+  { from:'C3', to:'C4', label:'인구 증가·생태 변화가 자원 소비 압력 증대' },
+  { from:'C3', to:'A1', label:'인구 구조가 국가 재정·복지 정책 방향 결정' },
+  { from:'C3', to:'E3', label:'인구 고령화가 개인 소비 패턴 변화' },
+  { from:'C4', to:'A2', label:'희소 자원 분포가 지정학적 긴장 유발' },
+  { from:'C4', to:'A4', label:'자원 제약이 대체 기술 개발 동기 부여' },
+  { from:'C4', to:'E2', label:'원자재 희소성이 물가·생산비용에 반영' },
+  { from:'A1', to:'A2', label:'국가 목표함수가 안보 전략 방향 결정' },
+  { from:'A1', to:'A3', label:'권력 구조가 법·제도·정책을 설계' },
+  { from:'A1', to:'E1', label:'국가 재정·채권 발행이 금리·유동성에 영향' },
+  { from:'A2', to:'A3', label:'패권 경쟁이 관세·제재·산업정책으로 구현' },
+  { from:'A2', to:'C4', label:'전쟁·봉쇄가 자원 공급망을 차단' },
+  { from:'A2', to:'E1', label:'지정학 리스크가 금융시장 변동성에 반영' },
+  { from:'A2', to:'E2', label:'호르무즈 봉쇄 → 유가 급등 → 물가 상승' },
+  { from:'A3', to:'A5', label:'산업정책·보조금이 특정 산업 육성·억제' },
+  { from:'A3', to:'A6', label:'세금·규제가 기업 이익 구조와 투자 유인 변화' },
+  { from:'A3', to:'E1', label:'통화정책(금리)이 자본시장 조건 결정' },
+  { from:'A3', to:'E2', label:'재정정책이 고용·물가·성장에 직접 영향' },
+  { from:'A4', to:'A5', label:'기술이 산업 표준·공급망 구조 재편' },
+  { from:'A4', to:'A6', label:'R&D가 기업 경쟁 우위와 비용 구조 결정' },
+  { from:'A4', to:'C4', label:'기술 혁신이 자원 제약의 경계를 확장' },
+  { from:'A5', to:'A6', label:'산업 구조가 기업의 가격결정력·마진 결정' },
+  { from:'A5', to:'E1', label:'CAPEX 사이클이 신용·투자 지표에 반영' },
+  { from:'A5', to:'E2', label:'생산능력 변화가 공급·고용·무역에 영향' },
+  { from:'A6', to:'E1', label:'기업 실적·현금흐름이 주가·신용에 반영' },
+  { from:'A6', to:'E2', label:'고용·투자·생산이 실물경제 지표로 집계' },
+  { from:'A6', to:'E3', label:'제품·가격정책이 개인 소비 패턴 변화' },
+  { from:'E1', to:'A3', label:'금리 급등·시장 발작이 정책 대응 강제' },
+  { from:'E1', to:'A6', label:'자금조달 비용이 기업 투자·CAPEX 결정' },
+  { from:'E1', to:'E2', label:'금융 여건이 실물 투자·소비에 파급' },
+  { from:'E2', to:'E1', label:'물가·고용 지표가 금리 기대 재조정' },
+  { from:'E2', to:'E3', label:'임금·물가·고용이 개인 생활 조건 결정' },
+  { from:'E3', to:'E2', label:'집단 소비 변화가 실물경제 집계 지표로 반영' },
+  { from:'E3', to:'E4', label:'체감 악화가 집단화되면 사회 갈등으로 전이' },
+  { from:'E4', to:'E5', label:'사회 갈등·신뢰 붕괴가 정치적 압력으로 표현' },
+  { from:'E5', to:'A3', label:'정치 상태 변화가 정책 방향·속도 재설계' },
+  { from:'E5', to:'A1', label:'선거·권력 교체가 국가 목표함수 재설정' },
+];
+
+// 노드 데이터 (상세)
+const nodeData = {
+  C1: {
+    desc: '시간은 되돌릴 수 없고, 에너지는 공짜로 생기지 않는다. 변환할 때마다 손실이 발생하며, 작은 것들이 쌓여 임계점을 넘으면 한꺼번에 터진다.',
+    out: [
+      { id:'A4', dir:'→', text:'물리 법칙이 기술 개발의 방향을 제약한다' },
+      { id:'E1', dir:'→', text:'비가역성·복리 원리가 자본시장의 기본 전제' },
+    ],
+    example: { title:'복리와 시간', text:'지금 1.17억이 <em>35년</em> 굴러가면 연 10%에서 <em>명목 73억</em>이 된다. 시간을 되돌릴 수 없기 때문에 중간에 패닉셀 한 번이 복리 기반 자체를 영구적으로 훼손한다. C1이 투자에서 가장 중요한 이유다.' }
+  },
+  C2: {
+    desc: '태양에서 들어오는 에너지와 지구가 내보내는 에너지의 균형이 바뀌면 기후가 변한다. 기후는 식량·보험·전력·도시 인프라 비용 구조 전체를 흔든다.',
+    out: [
+      { id:'C3', dir:'→', text:'기후 변화가 생태계·서식지를 바꿈' },
+      { id:'A3', dir:'→', text:'기후 비용이 탄소 규범·정책을 만들어냄' },
+      { id:'E2', dir:'→', text:'폭염·홍수·가뭄이 식량·에너지 물가에 반영' },
+    ],
+    example: { title:'기후와 에너지 전환', text:'유럽이 <em>탄소국경세(A3)</em>를 도입한 건 C2의 압력이 A3로 전달된 사례다. 이것이 다시 철강·시멘트 산업의 <em>비용 구조(A5)</em>를 바꾸고, <em>탄소 ETF·신재생 주식(E1)</em> 가격에 반영된다.' }
+  },
+  C3: {
+    desc: '숲·바다·토양·미생물이 연결된 생태계 네트워크와 인구 구조가 만드는 경계. 인구 고령화는 10~30년에 걸쳐 노동·재정·소비·정치 전반을 바꾼다.',
+    out: [
+      { id:'C4', dir:'→', text:'인구 증가·생태 변화가 자원 소비 압력 증대' },
+      { id:'A1', dir:'→', text:'인구 구조가 국가 재정·복지 정책 방향 결정' },
+      { id:'E3', dir:'→', text:'인구 고령화가 개인 소비 패턴 변화' },
+    ],
+    example: { title:'한국의 인구 구조', text:'한국 고령화(C3)는 <em>국민연금 고갈 우려(A3)</em>로 이어지고, 이것이 <em>세금·복지 정책(A3)</em>을 바꾼다. 동시에 헬스케어·요양 산업(A5) 성장과 <em>소비재 구조(E3)</em> 변화로 나타난다.' }
+  },
+  C4: {
+    desc: '물·토지·광물·식량은 한정되어 있다. 좋은 조건부터 먼저 쓰기 때문에 시간이 갈수록 단위당 투입량이 구조적으로 증가한다.',
+    out: [
+      { id:'A2', dir:'→', text:'희소 자원 분포가 지정학적 긴장 유발' },
+      { id:'A4', dir:'→', text:'자원 제약이 대체 기술 개발 동기 부여' },
+      { id:'E2', dir:'→', text:'원자재 희소성이 물가·생산비용에 반영' },
+    ],
+    in: [
+      { id:'C3', dir:'←', text:'인구 증가·생태 변화가 자원 소비 압력 증대' },
+      { id:'A2', dir:'←', text:'전쟁·봉쇄가 자원 공급망을 차단' },
+      { id:'A4', dir:'←', text:'기술 혁신이 자원 제약의 경계를 확장' },
+    ],
+    example: { title:'우라늄과 희소성', text:'우라늄(C4)은 고품위 광산부터 소진되며 채굴 비용이 구조적으로 오른다. 에너지 안보(A2) 수요가 겹치면서 원전 확대(A5)가 진행되고, URA 같은 <em>우라늄 ETF(E1)</em> 가격이 상승한다.' }
+  },
+  A1: {
+    desc: '법·제도를 만들고 강제 집행할 수 있는 최상위 의사결정 주체. 특정 국면에서 목표함수가 성장에서 안보·체제 유지로 전환되면 아래 레이어 전체가 한꺼번에 정렬된다.',
+    out: [
+      { id:'A2', dir:'→', text:'국가 목표함수가 안보 전략 방향 결정' },
+      { id:'A3', dir:'→', text:'권력 구조가 법·제도·정책을 설계' },
+      { id:'E1', dir:'→', text:'국가 재정·채권 발행이 금리·유동성에 영향' },
+    ],
+    in: [
+      { id:'C3', dir:'←', text:'인구 구조가 국가 재정·복지 방향 결정' },
+      { id:'E5', dir:'←', text:'선거·권력 교체가 국가 목표함수 재설정' },
+    ],
+    example: { title:'트럼프 재집권', text:'트럼프 재집권(E5→A1)으로 미국의 목표함수가 자유무역에서 <em>자국 우선 산업보호(A3)</em>로 전환됐다. 이것이 관세·IRA 정책을 통해 <em>반도체·전기차 산업(A5)</em>을 재편하고, <em>달러·금리(E1)</em>에 영향을 준다.' }
+  },
+  A2: {
+    desc: '힘의 배치와 균형. 전쟁이 없어도 항로·자원·기술을 통한 패권 경쟁은 상시 작동한다. 한번 굳어지면 아래 레이어 전체가 그 방향으로 정렬된다.',
+    out: [
+      { id:'A3', dir:'→', text:'패권 경쟁이 관세·제재·산업정책으로 구현' },
+      { id:'C4', dir:'→', text:'전쟁·봉쇄가 자원 공급망을 차단' },
+      { id:'E1', dir:'→', text:'지정학 리스크가 금융시장 변동성에 반영' },
+      { id:'E2', dir:'→', text:'호르무즈 봉쇄 → 유가 급등 → 물가 상승' },
+    ],
+    in: [
+      { id:'C4', dir:'←', text:'희소 자원 분포가 지정학적 긴장 유발' },
+      { id:'A1', dir:'←', text:'국가 목표함수가 안보 전략 방향 결정' },
+    ],
+    example: { title:'중동전쟁과 포트폴리오', text:'이란-미국 긴장(A2)이 호르무즈 봉쇄로 이어져 <em>유가 급등(C4→E2)</em>. 이것이 인플레이션을 높여 <em>금리 인상 가능성(E1)</em>으로 연결되고, 방산(RTX·GEV)은 A2 수혜, 고PER 성장주는 E1 압박을 받는다.' }
+  },
+  A3: {
+    desc: '인센티브와 페널티의 설계. 세금·금융규칙·산업정책·국제 통상이 개인과 기업의 선택을 바꾼다. 투자자에게 가장 직접적으로 영향을 주는 레이어다.',
+    out: [
+      { id:'A5', dir:'→', text:'산업정책·보조금이 특정 산업 육성·억제' },
+      { id:'A6', dir:'→', text:'세금·규제가 기업 이익 구조와 투자 유인 변화' },
+      { id:'E1', dir:'→', text:'통화정책(금리)이 자본시장 조건 결정' },
+      { id:'E2', dir:'→', text:'재정정책이 고용·물가·성장에 직접 영향' },
+    ],
+    in: [
+      { id:'A1', dir:'←', text:'권력 구조가 법·제도·정책을 설계' },
+      { id:'A2', dir:'←', text:'패권 경쟁이 관세·제재·산업정책으로 구현' },
+      { id:'E1', dir:'←', text:'금리 급등·시장 발작이 정책 대응 강제' },
+      { id:'E5', dir:'←', text:'정치 상태 변화가 정책 방향·속도 재설계' },
+      { id:'C2', dir:'←', text:'기후 비용이 탄소 규범·정책을 만들어냄' },
+    ],
+    example: { title:'워시 연준과 금리 딜레마', text:'FOMC 의사록(A3)에 "인플레 지속 시 금리인상 적절" 문구가 등장했다. 이것이 <em>국채금리 급등(E1)</em>으로 이어지고, 기업 자금조달 비용(A6)을 올리며, 결국 <em>고PER 주식 조정 압력(E1)</em>으로 연결된다.' }
+  },
+  A4: {
+    desc: '제약의 경계를 미는 지식 엔진. 발견(실험실) → 규모화(공장) → 채택(사회) 3단계가 모두 다르다. 각 단계 어디에 있는지가 투자 타이밍을 결정한다.',
+    out: [
+      { id:'A5', dir:'→', text:'기술이 산업 표준·공급망 구조 재편' },
+      { id:'A6', dir:'→', text:'R&D가 기업 경쟁 우위와 비용 구조 결정' },
+      { id:'C4', dir:'→', text:'기술 혁신이 자원 제약의 경계를 확장' },
+    ],
+    in: [
+      { id:'C1', dir:'←', text:'물리 법칙이 기술 개발의 방향을 제약' },
+      { id:'C4', dir:'←', text:'자원 제약이 대체 기술 개발 동기 부여' },
+    ],
+    example: { title:'GLP-1과 세마글루타이드', text:'세마글루타이드는 A4(분자 메커니즘 발견)에서 시작해 NVO·LLY(A6)가 규모화했다. 아직 GLP-1 시장 침투율이 ~2%라는 것은 A4→A5 전환이 초기라는 뜻. <em>oral 세마글루타이드</em>는 A4→A5 진입 여부가 핵심 관전 포인트다.' }
+  },
+  A5: {
+    desc: '기술과 규칙이 대량화로 굳어지는 구조. 표준 채택 → CAPEX 투입 → 장기 계약으로 수요가 잠기면 되돌리기 어렵다. 확장성과 비가역성이 핵심 판단 기준.',
+    out: [
+      { id:'A6', dir:'→', text:'산업 구조가 기업의 가격결정력·마진 결정' },
+      { id:'E1', dir:'→', text:'CAPEX 사이클이 신용·투자 지표에 반영' },
+      { id:'E2', dir:'→', text:'생산능력 변화가 공급·고용·무역에 영향' },
+    ],
+    in: [
+      { id:'A3', dir:'←', text:'산업정책·보조금이 특정 산업 육성·억제' },
+      { id:'A4', dir:'←', text:'기술이 산업 표준·공급망 구조 재편' },
+    ],
+    example: { title:'데이터센터 전력 수요', text:'AI 하이퍼스케일러의 장기 전력 계약(A5 진입)이 EQIX·GEV 같은 <em>데이터센터·전력 인프라(A6)</em> 수요를 잠갔다. CAPEX가 집행되면 되돌리기 어려워 이 테마의 <em>지속성(E1 주가 반영)</em>이 높아진다.' }
+  },
+  A6: {
+    desc: '산업 위에서 성과를 내는 주체. 같은 산업 환경에서도 수율·납기·원가 차이가 가격결정력을 만들고, 비가역적 자본배분 선택으로 승패가 갈린다.',
+    out: [
+      { id:'E1', dir:'→', text:'기업 실적·현금흐름이 주가·신용에 반영' },
+      { id:'E2', dir:'→', text:'고용·투자·생산이 실물경제 지표로 집계' },
+      { id:'E3', dir:'→', text:'제품·가격정책이 개인 소비 패턴 변화' },
+    ],
+    in: [
+      { id:'A3', dir:'←', text:'세금·규제가 기업 이익 구조와 투자 유인 변화' },
+      { id:'A4', dir:'←', text:'R&D가 기업 경쟁 우위와 비용 구조 결정' },
+      { id:'A5', dir:'←', text:'산업 구조가 기업의 가격결정력·마진 결정' },
+      { id:'E1', dir:'←', text:'자금조달 비용이 기업 투자·CAPEX 결정' },
+    ],
+    example: { title:'NVO CAPEX와 FCF', text:'NVO가 2027~2029 공장 증설(A6 비가역적 선택)에 대규모 CAPEX를 집행 중이다. 이것이 FCF를 일시 압축하지만(E1 주가 부진), GLP-1 수요(A5)가 공장 완공 시점과 맞물리면 <em>2028년 FCF 회복(E1 재평가)</em>으로 연결된다.' }
+  },
+  E1: {
+    desc: '제약(C)과 조정(A)의 누적을 가격으로 압축해 보여주는 계기판. 평소엔 배경이지만 임계치를 넘으면 금리·신용·유동성으로 모든 레이어를 강제한다.',
+    out: [
+      { id:'A3', dir:'→', text:'금리 급등·시장 발작이 정책 대응 강제' },
+      { id:'A6', dir:'→', text:'자금조달 비용이 기업 투자·CAPEX 결정' },
+      { id:'E2', dir:'→', text:'금융 여건이 실물 투자·소비에 파급' },
+    ],
+    in: [
+      { id:'A1', dir:'←', text:'국가 재정·채권 발행이 금리·유동성에 영향' },
+      { id:'A2', dir:'←', text:'지정학 리스크가 금융시장 변동성에 반영' },
+      { id:'A3', dir:'←', text:'통화정책(금리)이 자본시장 조건 결정' },
+      { id:'A5', dir:'←', text:'CAPEX 사이클이 신용·투자 지표에 반영' },
+      { id:'A6', dir:'←', text:'기업 실적·현금흐름이 주가·신용에 반영' },
+      { id:'E2', dir:'←', text:'물가·고용 지표가 금리 기대 재조정' },
+      { id:'C1', dir:'←', text:'비가역성·복리 원리가 자본시장의 기본 전제' },
+    ],
+    example: { title:'30년물 5% 돌파의 의미', text:'미국 30년물 국채금리 5% 돌파(E1)는 A1(재정 확대)·A2(중동 리스크)·A3(금리인상 가능성)·C4(에너지 비용)가 모두 누적된 결과다. 이것이 다시 <em>고PER 주식 할인율 상승(A6→E1 피드백)</em>으로 연결된다.' }
+  },
+  E2: {
+    desc: '수많은 주체들의 선택이 집계되어 나타난 결과. PMI·고용·물가·무역 데이터가 여기 속한다. 방향이 바뀌면 E1을 리프라이싱하고 E3에 체감으로 전달된다.',
+    out: [
+      { id:'E1', dir:'→', text:'물가·고용 지표가 금리 기대 재조정' },
+      { id:'E3', dir:'→', text:'임금·물가·고용이 개인 생활 조건 결정' },
+    ],
+    in: [
+      { id:'A2', dir:'←', text:'호르무즈 봉쇄 → 유가 급등 → 물가 상승' },
+      { id:'A3', dir:'←', text:'재정정책이 고용·물가·성장에 직접 영향' },
+      { id:'A5', dir:'←', text:'생산능력 변화가 공급·고용·무역에 영향' },
+      { id:'A6', dir:'←', text:'고용·투자·생산이 실물경제 지표로 집계' },
+      { id:'C2', dir:'←', text:'폭염·홍수·가뭄이 식량·에너지 물가에 반영' },
+      { id:'C4', dir:'←', text:'원자재 희소성이 물가·생산비용에 반영' },
+      { id:'E1', dir:'←', text:'금융 여건이 실물 투자·소비에 파급' },
+      { id:'E3', dir:'←', text:'집단 소비 변화가 실물경제 집계 지표로 반영' },
+    ],
+    example: { title:'제조업 투입가격 급등', text:'5월 제조업 투입가격지수 68→79 급등(E2)은 A2(중동전쟁)→C4(에너지 비용)의 전달 결과다. 이 수치가 <em>CPI 예측치 상회(E2)</em>로 이어지고, 선물시장의 <em>금리인상 확률(E1)</em>을 끌어올린다.' }
+  },
+  E3: {
+    desc: '상위 레이어의 누적이 삶으로 드러나는 지점. 핵심은 평균이 아닌 분포와 체감이다. 같은 금리라도 부채 없는 사람과 변동금리 대출자의 체감은 완전히 다르다.',
+    out: [
+      { id:'E2', dir:'→', text:'집단 소비 변화가 실물경제 집계 지표로 반영' },
+      { id:'E4', dir:'→', text:'체감 악화가 집단화되면 사회 갈등으로 전이' },
+    ],
+    in: [
+      { id:'A6', dir:'←', text:'제품·가격정책이 개인 소비 패턴 변화' },
+      { id:'C3', dir:'←', text:'인구 고령화가 개인 소비 패턴 변화' },
+      { id:'E2', dir:'←', text:'임금·물가·고용이 개인 생활 조건 결정' },
+    ],
+    example: { title:'고금리와 가계 압박', text:'국채금리 5%(E1)가 주택담보대출 금리로 전달되면(E1→E2→E3) 변동금리 대출자의 이자 부담이 급증한다. 이것이 <em>재량 소비 축소(E3)</em>로 이어지고, 집계되면 <em>소비 지표 둔화(E2)</em>로 나타나 다시 E1을 리프라이싱한다.' }
+  },
+  E4: {
+    desc: '개인(E3) 체감이 집단화된 구조. 신뢰가 낮으면 작은 충격도 큰 갈등이 된다. 갈등 축이 고정되면 타협 비용이 커지고, 사회가 조정 레이어로 역류한다.',
+    out: [
+      { id:'E5', dir:'→', text:'사회 갈등·신뢰 붕괴가 정치적 압력으로 표현' },
+    ],
+    in: [
+      { id:'E3', dir:'←', text:'체감 악화가 집단화되면 사회 갈등으로 전이' },
+    ],
+    example: { title:'인플레이션과 정치 압력', text:'에너지·식료품 물가 급등(E2)이 개인 생활비 압박(E3)으로 체감되고, 이것이 "정책 실패"라는 서사(E4)로 집단화되면 <em>정권 교체·포퓰리즘 정책 요구(E5)</em>로 이어진다. 이 경로가 A1·A3를 재설계하는 강력한 상향 피드백이다.' }
+  },
+  E5: {
+    desc: '표현→조정의 연결점. 정치는 정책 그 자체가 아니라 정책이 가능해지는 권력·정당성·의제·추진력이라는 상태다. E5가 변하면 A3로 넘어가 레이어 전체를 재정렬한다.',
+    out: [
+      { id:'A3', dir:'→', text:'정치 상태 변화가 정책 방향·속도 재설계' },
+      { id:'A1', dir:'→', text:'선거·권력 교체가 국가 목표함수 재설정' },
+    ],
+    in: [
+      { id:'E4', dir:'←', text:'사회 갈등·신뢰 붕괴가 정치적 압력으로 표현' },
+    ],
+    example: { title:'워시 연준 체제 전환', text:'트럼프 재선(E5)이 파월 체제에서 워시 체제로의 전환(A1→A3)을 가능하게 했다. 워시의 목표(금리인하+QT)가 현재 경제 여건(E2)과 충돌하면서 <em>정책 불확실성 프리미엄(E1)</em>이 올라가고 있다.' }
+  },
+};
+
+// 레이아웃 계산 (수동 배치)
+const layout = {
+  C1: { x: 0.15, y: 0.08 },
+  C2: { x: 0.38, y: 0.08 },
+  C3: { x: 0.62, y: 0.08 },
+  C4: { x: 0.85, y: 0.08 },
+
+  A1: { x: 0.08, y: 0.38 },
+  A2: { x: 0.27, y: 0.38 },
+  A3: { x: 0.46, y: 0.38 },
+  A4: { x: 0.65, y: 0.38 },
+  A5: { x: 0.80, y: 0.38 },
+  A6: { x: 0.92, y: 0.38 },
+
+  E1: { x: 0.12, y: 0.72 },
+  E2: { x: 0.33, y: 0.72 },
+  E3: { x: 0.54, y: 0.72 },
+  E4: { x: 0.73, y: 0.72 },
+  E5: { x: 0.90, y: 0.72 },
+};
+
+let selected = null;
+let svgEl, W, H;
+
+function typeColor(type) {
+  return type === 'C' ? C : type === 'A' ? A : E;
+}
+
+function init() {
+  svgEl = document.getElementById('canvas');
+  resize();
+  window.addEventListener('resize', () => { resize(); draw(); });
+  draw();
+}
+
+function resize() {
+  const rect = svgEl.parentElement.getBoundingClientRect();
+  W = rect.width;
+  H = rect.height;
+  svgEl.setAttribute('width', W);
+  svgEl.setAttribute('height', H);
+}
+
+function px(node) {
+  return {
+    x: layout[node.id].x * W,
+    y: layout[node.id].y * H,
+  };
+}
+
+function draw() {
+  svgEl.innerHTML = '';
+
+  // 배경 그룹 레이블
+  drawGroupBg();
+
+  // 엣지 먼저
+  edges.forEach(e => drawEdge(e));
+
+  // 노드
+  nodes.forEach(n => drawNode(n));
+}
+
+function drawGroupBg() {
+  // C 그룹
+  const cGroup = makeSvg('rect', {
+    x: 0.05 * W, y: 0.01 * H,
+    width: 0.9 * W, height: 0.18 * H,
+    rx: 8, fill: 'rgba(200,169,126,0.04)',
+    stroke: 'rgba(200,169,126,0.12)', 'stroke-width': 1
+  });
+  svgEl.appendChild(cGroup);
+  svgEl.appendChild(label(0.08 * W, 0.025 * H, 'C — 제약 (Constraint)', C, 10));
+
+  // A 그룹
+  const aGroup = makeSvg('rect', {
+    x: 0.02 * W, y: 0.27 * H,
+    width: 0.96 * W, height: 0.2 * H,
+    rx: 8, fill: 'rgba(126,184,200,0.04)',
+    stroke: 'rgba(126,184,200,0.12)', 'stroke-width': 1
+  });
+  svgEl.appendChild(aGroup);
+  svgEl.appendChild(label(0.04 * W, 0.285 * H, 'A — 조정 (Adjustment)', A, 10));
+
+  // E 그룹
+  const eGroup = makeSvg('rect', {
+    x: 0.05 * W, y: 0.61 * H,
+    width: 0.9 * W, height: 0.2 * H,
+    rx: 8, fill: 'rgba(126,200,154,0.04)',
+    stroke: 'rgba(126,200,154,0.12)', 'stroke-width': 1
+  });
+  svgEl.appendChild(eGroup);
+  svgEl.appendChild(label(0.08 * W, 0.625 * H, 'E — 표현 (Expression)', E, 10));
+}
+
+function label(x, y, text, color, size) {
+  const t = makeSvg('text', {
+    x, y, fill: color, 'font-size': size,
+    'font-family': 'JetBrains Mono, monospace',
+    'letter-spacing': 2, opacity: 0.7
+  });
+  t.textContent = text;
+  return t;
+}
+
+function drawEdge(e) {
+  const from = nodes.find(n => n.id === e.from);
+  const to = nodes.find(n => n.id === e.to);
+  const fp = px(from), tp = px(to);
+
+  const isConnected = selected && (e.from === selected || e.to === selected);
+  const hasSelected = selected !== null;
+
+  const opacity = hasSelected ? (isConnected ? 0.85 : 0.05) : 0.18;
+  const strokeW = isConnected ? 1.5 : 1;
+  const color = isConnected
+    ? (e.from === selected ? typeColor(from.type) : typeColor(to.type))
+    : MUTED;
+
+  // 곡선 경로
+  const dx = tp.x - fp.x;
+  const dy = tp.y - fp.y;
+  const cx1 = fp.x + dx * 0.3;
+  const cy1 = fp.y + dy * 0.1;
+  const cx2 = fp.x + dx * 0.7;
+  const cy2 = tp.y - dy * 0.1;
+
+  const id = `edge-${e.from}-${e.to}`;
+  const markId = `arrow-${e.from}-${e.to}`;
+
+  // 마커
+  const defs = svgEl.querySelector('defs') || (() => { const d = makeSvg('defs',{}); svgEl.insertBefore(d, svgEl.firstChild); return d; })();
+  const marker = makeSvg('marker', {
+    id: markId, markerWidth: 6, markerHeight: 6,
+    refX: 5, refY: 3, orient: 'auto'
+  });
+  const arrow = makeSvg('path', {
+    d: 'M0,0 L0,6 L6,3 z',
+    fill: color, opacity
+  });
+  marker.appendChild(arrow);
+  defs.appendChild(marker);
+
+  const path = makeSvg('path', {
+    d: `M${fp.x},${fp.y} C${cx1},${cy1} ${cx2},${cy2} ${tp.x},${tp.y}`,
+    stroke: color, 'stroke-width': strokeW,
+    fill: 'none', opacity,
+    'marker-end': `url(#${markId})`,
+    id
+  });
+  svgEl.appendChild(path);
+}
+
+function drawNode(n) {
+  const p = px(n);
+  const isSelected = selected === n.id;
+  const isConnected = selected && edges.some(e => (e.from === n.id && e.to === selected) || (e.to === n.id && e.from === selected) || e.from === selected && e.to === n.id || e.to === selected && e.from === n.id);
+  const hasSelected = selected !== null;
+
+  const opacity = hasSelected ? (isSelected || isConnected ? 1 : 0.25) : 1;
+  const r = isSelected ? 36 : 28;
+  const strokeW = isSelected ? 2 : 1;
+
+  const g = makeSvg('g', {
+    transform: `translate(${p.x},${p.y})`,
+    style: 'cursor:pointer',
+    opacity
+  });
+
+  // 글로우
+  if (isSelected) {
+    const glow = makeSvg('circle', {
+      r: 44, fill: n.color, opacity: 0.08
+    });
+    g.appendChild(glow);
+  }
+
+  // 원
+  const circle = makeSvg('circle', {
+    r, fill: SURFACE,
+    stroke: n.color, 'stroke-width': strokeW,
+  });
+  g.appendChild(circle);
+
+  // 코드
+  const code = makeSvg('text', {
+    'text-anchor': 'middle', 'dominant-baseline': 'central',
+    fill: n.color, 'font-size': isSelected ? 13 : 11,
+    'font-weight': 700,
+    'font-family': 'JetBrains Mono, monospace',
+    y: -5
+  });
+  code.textContent = n.label;
+  g.appendChild(code);
+
+  // 이름 (짧게)
+  const shortName = n.name.split('·')[0];
+  const nameTxt = makeSvg('text', {
+    'text-anchor': 'middle', 'dominant-baseline': 'central',
+    fill: '#888', 'font-size': 8,
+    'font-family': 'Noto Serif KR, serif',
+    y: 9
+  });
+  nameTxt.textContent = shortName;
+  g.appendChild(nameTxt);
+
+  g.addEventListener('click', () => onNodeClick(n.id));
+  svgEl.appendChild(g);
+}
+
+function onNodeClick(id) {
+  selected = selected === id ? null : id;
+  draw();
+  renderSide(selected);
+}
+
+function renderSide(id) {
+  const side = document.getElementById('side-content');
+  if (!id) {
+    side.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">◎</div>
+        <div class="empty-text">노드를 클릭하면<br>연결 관계와 예시가<br>여기에 나타납니다</div>
+      </div>`;
+    return;
+  }
+
+  const n = nodes.find(x => x.id === id);
+  const d = nodeData[id];
+  const outEdges = edges.filter(e => e.from === id);
+  const inEdges = edges.filter(e => e.to === id);
+
+  const color = typeColor(n.type);
+
+  let html = `
+    <div class="side-header" style="border-left: 3px solid ${color}; padding-left: 20px;">
+      <div class="side-code" style="color:${color}">${n.label}</div>
+      <div class="side-name">${n.name}</div>
+      <div class="side-sub">${d.desc}</div>
+    </div>
+    <div class="side-body">`;
+
+  if (outEdges.length > 0) {
+    html += `<div class="side-section">
+      <div class="side-label">이 레이어가 영향을 주는 곳 →</div>
+      <div class="conn-list">`;
+    outEdges.forEach(e => {
+      const toNode = nodes.find(x => x.id === e.to);
+      const tc = typeColor(toNode.type);
+      html += `<div class="conn-item" onclick="onNodeClick('${e.to}')">
+        <div class="conn-arrow" style="color:${color}">→</div>
+        <div class="conn-code" style="color:${tc}">${e.to}</div>
+        <div class="conn-text">${e.label}</div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  if (inEdges.length > 0) {
+    html += `<div class="side-section">
+      <div class="side-label">← 이 레이어에 영향을 주는 곳</div>
+      <div class="conn-list">`;
+    inEdges.forEach(e => {
+      const fromNode = nodes.find(x => x.id === e.from);
+      const fc = typeColor(fromNode.type);
+      html += `<div class="conn-item" onclick="onNodeClick('${e.from}')">
+        <div class="conn-arrow" style="color:${color}">←</div>
+        <div class="conn-code" style="color:${fc}">${e.from}</div>
+        <div class="conn-text">${e.label}</div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  if (d.example) {
+    html += `<div class="side-section">
+      <div class="side-label">실제 사례</div>
+      <div class="example-box">
+        <div class="side-label" style="margin-bottom:8px;color:${color}">${d.example.title}</div>
+        <div class="example-text">${d.example.text}</div>
+      </div>
+    </div>`;
+  }
+
+  html += `</div>`;
+  side.innerHTML = html;
+}
+
+function makeSvg(tag, attrs) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+  return el;
+}
+
+window.onNodeClick = onNodeClick;
+window.addEventListener('load', init);
+</script>
+</body>
+</html>
